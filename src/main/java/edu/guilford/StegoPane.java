@@ -1,7 +1,12 @@
 package edu.guilford;
 
-import java.io.File;
+import java.io.*;
 
+import java.io.File;
+import java.io.IOException;
+import javafx.application.Application;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import org.apache.commons.io.FileUtils;
 
 import javafx.geometry.Rectangle2D;
@@ -254,23 +259,25 @@ public class StegoPane extends Pane {
             FileChooser fileChooser = new FileChooser();
             //Set the title of the fileChooser
             fileChooser.setTitle("Save Encrypted Image");
-            //Find the path to the users home
-            String path = "user.home";
             //Set the initial directory of the fileChooser
-            fileChooser.setInitialDirectory(new File(System.getProperty(path)));
-            //Set the extension filter of the fileChooser
-            fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif", "*.jpeg", "*.bmp"));
-            //Instantiate a File object
+            fileChooser.setInitialDirectory(new File(System.getProperty("user.home") + "/Desktop"));
+            //Set a default file name
+            fileChooser.setInitialFileName("encryptedImage.png");
+            //Show the dialog and get the selected file
             File selectedFile = fileChooser.showSaveDialog(null);
-            //Instantiate an Image object
-            Image image = new Image(selectedFile.toURI().toString());
-            //Copy the image using the Commons IO library
-            try {
-                FileUtils.copyFile(selectedFile, new File("C:/stegofinalproject/src/main/EncodedImages/Used" + selectedFile.getName()), true);
-            } catch (Exception e1) {
-                //Print the stack trace if there is an error
-                e1.printStackTrace();
+            if (selectedFile != null) {
+                //Save the file
+                try (FileOutputStream outputStream = new FileOutputStream(selectedFile)) {
+                    Image image = imageView.getImage();
+                    BufferedImage bImage = SwingFXUtils.fromFXImage(image, null);
+                    ImageIO.write(bImage, "png", outputStream);
+                    outputStream.flush();
+                    outputStream.close();
+                } catch (IOException e1) {
+                    System.err.println("Error saving file: " + e1.getMessage());
+                }
             }
+            
         });
 
         //Add an event listener for the stegoImage button to open a file chooser from the user's computer
